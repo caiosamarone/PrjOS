@@ -16,7 +16,7 @@ import com.mendes.os.domain.ValidationsGroups;
 @Entity
 public class Cliente {
 
-	@NotNull(groups = ValidationsGroups.ClienteId.class)
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
