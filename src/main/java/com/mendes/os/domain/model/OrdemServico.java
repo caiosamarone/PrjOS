@@ -3,6 +3,8 @@ package com.mendes.os.domain.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -11,6 +13,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -19,7 +22,8 @@ import javax.validation.groups.Default;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
-import com.mendes.os.domain.ValidationsGroups;
+import com.mendes.os.api.model.Comentario;
+import com.mendes.os.domain.exception.NegocioException;
 
 @Entity
 public class OrdemServico {
@@ -43,7 +47,10 @@ public class OrdemServico {
 	private OffsetDateTime dataAbertura;
 	
 
-	private LocalDateTime dataFinalizacao;
+	private OffsetDateTime dataFinalizacao;
+	
+	@OneToMany(mappedBy = "ordemServico")
+	private List<Comentario> comentarios = new ArrayList<>();
 	public Long getId() {
 		return id;
 	}
@@ -75,10 +82,10 @@ public class OrdemServico {
 		this.status = status;
 	}
 	
-	public LocalDateTime getDataFinalizacao() {
+	public OffsetDateTime getDataFinalizacao() {
 		return dataFinalizacao;
 	}
-	public void setDataFinalizacao(LocalDateTime dataFinalizacao) {
+	public void setDataFinalizacao(OffsetDateTime dataFinalizacao) {
 		this.dataFinalizacao = dataFinalizacao;
 	}
 	public OffsetDateTime getDataAbertura() {
@@ -86,6 +93,13 @@ public class OrdemServico {
 	}
 	public void setDataAbertura(OffsetDateTime dataAbertura) {
 		this.dataAbertura = dataAbertura;
+	}
+	
+	public List<Comentario> getComentarios() {
+		return comentarios;
+	}
+	public void setComentarios(List<Comentario> comentarios) {
+		this.comentarios = comentarios;
 	}
 	@Override
 	public int hashCode() {
@@ -109,6 +123,18 @@ public class OrdemServico {
 		} else if (!id.equals(other.id))
 			return false;
 		return true;
+	}
+	
+	public void finalizar() {
+		if(!podeSerFinalizada()) {
+			throw new NegocioException("Ordem de servico nao pode ser finalizada");
+		}
+		setStatus(StatusOrdemServico.FINALIZADA);
+		setDataFinalizacao(OffsetDateTime.now());
+	}
+	
+	public boolean podeSerFinalizada() {
+		return StatusOrdemServico.ABERTA.equals(this.getStatus());
 	}
 	
 }
